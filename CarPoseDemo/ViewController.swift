@@ -25,8 +25,10 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 
     @IBOutlet var sceneView: ARSCNView!
     
-    let carParentNode = SCNNode()
+    //let carParentNode = SCNNode()
     
+    var carNode : SCNNode!
+    var carNodes : [SCNNode] = []
     
     var runningDetection = false
     
@@ -44,7 +46,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         sceneView.delegate = self
         
         // Show statistics such as fps and timing information
-        sceneView.showsStatistics = true
+        sceneView.showsStatistics = false
         
         sceneView.debugOptions = [.showFeaturePoints]
         sceneView.automaticallyUpdatesLighting = false
@@ -55,7 +57,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         // Set the scene to the view
         sceneView.scene = scene
         
-        self.addCarObject()
+        //self.addCarObject()
         
         
     }
@@ -124,23 +126,21 @@ class ViewController: UIViewController, ARSCNViewDelegate {
                 
                 if let result = _result {
                     
-                    let estimatedCamera = SCNMatrix4Invert(result.scenekitCameraTransform)
+                    var modelTransform = SCNMatrix4Invert(result.scenekitCameraTransform)
+                    modelTransform = SCNMatrix4Mult(modelTransform, cameraTransform)
                     
                     let meanScore = result.totalKeypointScore / 14.0
                     
                     if meanScore >= 0.5 {
+                        
+                        let carNode = self.closestOrNewCar( to: modelTransform.translation )
+                        
                         SCNTransaction.begin()
                         SCNTransaction.animationDuration = 0.15
-                        self.carParentNode.transform = SCNMatrix4Mult(estimatedCamera, cameraTransform)
+                        carNode.transform = modelTransform
                         SCNTransaction.commit()
+                        
                     }
-                    
-                    DispatchQueue.main.async {
-                        print(" Mean score: ", meanScore )
-                        //self.label.text = " sum: %4.1f  mean:  %5.2f ".format(result.sumOfMaxPerChannel,
-                        //                                                      meanScore)
-                    }
-                    
                     
                 }
                 
@@ -156,21 +156,56 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     
     
     
+    func closestOrNewCar( to position : SCNVector3, distanceThreshold : Float = 1.0 ) -> SCNNode {
+        
+        var closestCar : SCNNode?
+        var minDistance : Float = distanceThreshold
+        
+        for car in self.carNodes {
+            let dist = (car.worldPosition - position).length()
+            if dist < minDistance {
+                minDistance = dist
+                closestCar = car
+            }
+        }
+        
+        return closestCar ?? self.newCarNode()
+        
+        
+    }
     
     
-    func addCarObject() {
+    func newCarNode() -> SCNNode {
         
-        let scene = SCNScene(named: "art.scnassets/car.scn")!
+        if carNode == nil {
+            
+            let scene = SCNScene(named: "art.scnassets/car.scn")!
+            let car = scene.rootNode.childNode(withName: "car", recursively: true)!
+            carNode = car
+            
+        }
         
-        let car = scene.rootNode.childNode(withName: "car", recursively: true)!
         
-        car.geometry?.firstMaterial?.fillMode = .lines
-        car.geometry?.firstMaterial?.lightingModel = .constant
-        car.geometry?.firstMaterial?.diffuse.contents = UIColor.magenta
         
-        self.carParentNode.addChildNode(car)
-        self.sceneView.scene.rootNode.addChildNode(self.carParentNode)
+        let newCar = carNode.clone()
         
+        newCar.geometry = carNode.geometry?.copy() as? SCNGeometry
+        newCar.geometry?.firstMaterial = carNode.geometry?.firstMaterial?.copy() as? SCNMaterial
+        
+        newCar.geometry?.firstMaterial?.fillMode = .lines
+        newCar.geometry?.firstMaterial?.lightingModel = .constant
+        newCar.geometry?.firstMaterial?.diffuse.contents = UIColor(hue: CGFloat.random(in: 0...1.0),
+                                                                   saturation: 0.95,
+                                                                   brightness: 0.9, alpha: 1.0)
+        
+        
+        
+        let carParent = SCNNode()
+        carParent.addChildNode(newCar)
+        self.sceneView.scene.rootNode.addChildNode(carParent)
+        self.carNodes.append(carParent)
+        
+        return carParent
         
     }
     
