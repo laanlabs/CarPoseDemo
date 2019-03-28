@@ -81,14 +81,11 @@ using namespace cv;
     cv::Mat rotation_vector;
     cv::Mat translation_vector;
     
-    //printf("Solving with %i model points,  %i image points , \n ", model_points.size(), image_points.size() );
-    
-    
     solvePnPRansac(model_points, image_points, camera_matrix, dist_coeffs, rotation_vector, translation_vector);
     
+    // TODO: use reprojected model points scores
     //vector<Point2d> reprojected_car2D;
     //projectPoints(model_points, rotation_vector, translation_vector, camera_matrix, dist_coeffs, reprojected_car2D);
-    // TODO: use reprojected model points scores
     
     result.totalKeypointScore = total_score;
     
@@ -138,13 +135,7 @@ using namespace cv;
     int outputHeight = (int)input.shape[1].integerValue;
     int outputWidth = (int)input.shape[2].integerValue;
     
-    assert(numChannels == 14);
-    assert(outputWidth == POSE_NN_OUTSIZE);
-    assert(outputHeight == POSE_NN_OUTSIZE);
-    
     double * data = (double *)input.dataPointer;
-    
-    //float maxScore = 1.0;
     
     int blurSize = 3;
     

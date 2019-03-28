@@ -36,9 +36,6 @@ class CarPoseDetector {
     
     var isDetecting = false
     
-    //var networkInputWidth : Int = Int(POSE_NN_INSIZE)
-    //var networkInputHeight : Int = Int(POSE_NN_INSIZE)
-    
     let networkInputSize : Int = 192
     let networkOutputSize : Int = 96
     
@@ -169,20 +166,21 @@ class CarPoseDetector {
         
     }
     
-    private func getPoseForFeatures( features : MLMultiArray ) -> PoseResult {
+    private func getPoseForFeatures( features : MLMultiArray ) -> PoseResult? {
         
         let result = PoseUtils.estimatePose(fromHeatmap: features,
                                             modelPoints: &CarPoseDetector.modelPoints3d,
                                             imageWidth: Int32(self.networkInputSize),
                                             imageHeight: Int32(self.networkInputSize),
                                             focalLength: self.focalLength,
-                                            scoreThreshold: self.keypointScoreThreshold)!
+                                            scoreThreshold: self.keypointScoreThreshold)
         
-        var inv = SCNMatrix4Invert(result.transform)
-        inv.yAxis *= -1.0
-        inv.zAxis *= -1.0
-        
-        result.scenekitCameraTransform = inv;
+        if let result = result {
+            var inv = SCNMatrix4Invert(result.transform)
+            inv.yAxis *= -1.0
+            inv.zAxis *= -1.0
+            result.scenekitCameraTransform = inv;
+        }
         
         return result
                                          

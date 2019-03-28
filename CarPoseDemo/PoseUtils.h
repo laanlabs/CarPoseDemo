@@ -11,15 +11,11 @@
 #import <CoreML/CoreML.h>
 #import <SceneKit/SceneKit.h>
 
-//NS_ASSUME_NONNULL_BEGIN
 
-// for some reason the keypoint ordering gets shuffled somewhere in the training process
+
+// Keypoint indices shuffled during training. TODO
 const int UNITY_TO_NN_LAYER[] = {0, 1, 5, 2, 6, 3, 7, 4, 11, 8, 12, 9, 13, 10,};
 
-static const int POSE_NN_INSIZE = 192;
-static const int POSE_NN_OUTSIZE = 96;
-
-//
 
 @interface PoseResult : NSObject
 
@@ -44,20 +40,6 @@ static const int POSE_NN_OUTSIZE = 96;
                          scoreThreshold:(double)scoreThreshold;
 
 
-
-/*
-+ (CarPoseResult*) solvePnPWithModelPoints:(double*)points3d
-                                  features:(MLMultiArray*)features
-                            templatePoints:(double*)templatePoints
-                      reprojectedPointsOut:(double*)reprojectedPointsOut
-                                 numPoints:(int)numPoints
-                                imageWidth:(int)imageWidth
-                               imageHeight:(int)imageHeight
-                               focalLength:(double)focal_length
-                            scoreThreshold:(double)scoreThreshold;
-
-*/
-
 @end
 
-//NS_ASSUME_NONNULL_END
+

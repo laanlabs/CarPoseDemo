@@ -25,8 +25,6 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 
     @IBOutlet var sceneView: ARSCNView!
     
-    //let carParentNode = SCNNode()
-    
     var carNode : SCNNode!
     var carNodes : [SCNNode] = []
     
@@ -36,7 +34,6 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     let carDetectionIntervalMs : Double = 110.0
     
     let poseDetector = CarPoseDetector()
-    
     
     
     override func viewDidLoad() {
@@ -54,10 +51,9 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         // Create a new scene
         let scene = SCNScene()
+        
         // Set the scene to the view
         sceneView.scene = scene
-        
-        //self.addCarObject()
         
         
     }
@@ -156,7 +152,8 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     
     
     
-    func closestOrNewCar( to position : SCNVector3, distanceThreshold : Float = 1.0 ) -> SCNNode {
+    func closestOrNewCar( to position : SCNVector3,
+                          distanceThreshold : Float = 2.0 ) -> SCNNode {
         
         var closestCar : SCNNode?
         var minDistance : Float = distanceThreshold
@@ -186,7 +183,6 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         }
         
         
-        
         let newCar = carNode.clone()
         
         newCar.geometry = carNode.geometry?.copy() as? SCNGeometry
@@ -197,7 +193,6 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         newCar.geometry?.firstMaterial?.diffuse.contents = UIColor(hue: CGFloat.random(in: 0...1.0),
                                                                    saturation: 0.95,
                                                                    brightness: 0.9, alpha: 1.0)
-        
         
         
         let carParent = SCNNode()
