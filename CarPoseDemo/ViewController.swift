@@ -35,6 +35,11 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     
     let poseDetector = CarPoseDetector()
     
+    // Don't add new car model for every new detection
+    let singleCarOnly = false
+    
+    let carMergeRadius : Float = 1.75
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -125,11 +130,12 @@ class ViewController: UIViewController, ARSCNViewDelegate {
                     var modelTransform = SCNMatrix4Invert(result.scenekitCameraTransform)
                     modelTransform = SCNMatrix4Mult(modelTransform, cameraTransform)
                     
-                    let meanScore = result.totalKeypointScore / 14.0
-                    
-                    if meanScore >= 0.5 {
+                    if result.meanKeypointScore >= 0.5 {
                         
-                        let carNode = self.closestOrNewCar( to: modelTransform.translation )
+                        let thresh = self.singleCarOnly ? Float.infinity : self.carMergeRadius
+                        
+                        let carNode = self.closestOrNewCar( to: modelTransform.translation,
+                                                            distanceThreshold: thresh )
                         
                         SCNTransaction.begin()
                         SCNTransaction.animationDuration = 0.15
@@ -153,7 +159,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     
     
     func closestOrNewCar( to position : SCNVector3,
-                          distanceThreshold : Float = 2.0 ) -> SCNNode {
+                          distanceThreshold : Float = 1.5 ) -> SCNNode {
         
         var closestCar : SCNNode?
         var minDistance : Float = distanceThreshold
@@ -171,6 +177,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
     }
     
+    var hue : CGFloat = 0.85
     
     func newCarNode() -> SCNNode {
         
@@ -190,10 +197,12 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         newCar.geometry?.firstMaterial?.fillMode = .lines
         newCar.geometry?.firstMaterial?.lightingModel = .constant
-        newCar.geometry?.firstMaterial?.diffuse.contents = UIColor(hue: CGFloat.random(in: 0...1.0),
+        newCar.geometry?.firstMaterial?.diffuse.contents = UIColor(hue: hue,
                                                                    saturation: 0.95,
-                                                                   brightness: 0.9, alpha: 1.0)
+                                                                   brightness: 0.95, alpha: 1.0)
         
+        hue += CGFloat.random(in: 0.07...0.14)
+        hue = hue.truncatingRemainder(dividingBy: 1.0)
         
         let carParent = SCNNode()
         carParent.addChildNode(newCar)

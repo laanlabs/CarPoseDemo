@@ -64,11 +64,10 @@ using namespace cv;
         
     }
     
-    PoseResult * result = [PoseResult new];
+    
     
     if ( image_points.size() < 4 ) {
-        result.foundPose = false;
-        return result;
+        return nil;
     }
     
     
@@ -87,25 +86,26 @@ using namespace cv;
     //vector<Point2d> reprojected_car2D;
     //projectPoints(model_points, rotation_vector, translation_vector, camera_matrix, dist_coeffs, reprojected_car2D);
     
-    result.totalKeypointScore = total_score;
+    PoseResult * result = [PoseResult new];
     
+    result.totalKeypointScore = total_score;
+    result.meanKeypointScore = total_score / (double)numPoints;
     
     Mat expandedR;
     Rodrigues(rotation_vector, expandedR);
     
     SCNMatrix4 transform = SCNMatrix4Identity;
     
-    // col 1
+    // mCR, 1 based indexing
+    // x
     transform.m11 = expandedR.at<double>(0,0);
     transform.m12 = expandedR.at<double>(1,0);
     transform.m13 = expandedR.at<double>(2,0);
     
-    // col 2
     transform.m21 = expandedR.at<double>(0,1);
     transform.m22 = expandedR.at<double>(1,1);
     transform.m23 = expandedR.at<double>(2,1);
     
-    // col 3
     transform.m31 = expandedR.at<double>(0,2);
     transform.m32 = expandedR.at<double>(1,2);
     transform.m33 = expandedR.at<double>(2,2);
@@ -115,8 +115,18 @@ using namespace cv;
     transform.m42 = translation_vector.at<double>(1,0);
     transform.m43 = translation_vector.at<double>(2,0);
     
-    result.transform = transform;
+    //
+    SCNMatrix4 cam = SCNMatrix4Invert(transform);
+    // flip y,z
+    cam.m21 = cam.m21 * -1.0;
+    cam.m22 = cam.m22 * -1.0;
+    cam.m23 = cam.m23 * -1.0;
     
+    cam.m31 = cam.m31 * -1.0;
+    cam.m32 = cam.m32 * -1.0;
+    cam.m33 = cam.m33 * -1.0;
+    
+    result.scenekitCameraTransform = cam;
     
     return result;
     

@@ -174,14 +174,7 @@ class CarPoseDetector {
                                             imageHeight: Int32(self.networkInputSize),
                                             focalLength: self.focalLength,
                                             scoreThreshold: self.keypointScoreThreshold)
-        
-        if let result = result {
-            var inv = SCNMatrix4Invert(result.transform)
-            inv.yAxis *= -1.0
-            inv.zAxis *= -1.0
-            result.scenekitCameraTransform = inv;
-        }
-        
+
         return result
                                          
                                          
