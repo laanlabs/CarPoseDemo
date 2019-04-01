@@ -12,4 +12,9 @@ This model was only trained to handle a specific car model from a fixed viewing 
 
 Requires [GitLFS](https://git-lfs.github.com/) to download OpenCV framework.
 
+Snapshot of the Unity project:
+
+![](unity.jpg)
+
+
 
