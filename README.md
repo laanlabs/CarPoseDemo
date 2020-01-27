@@ -1,5 +1,9 @@
 # Real-time Mobile Car Pose Estimation with CoreML 
 
+#### 🚨NOTE 🚨 Requires [GitLFS](https://git-lfs.github.com/)
+If you get build errors this might be the issue.   
+Make sure the CarPoseModel.mlmodel is 5.2mb otherwise it has not been downloaded.
+
 ![](car.gif)
 
 
